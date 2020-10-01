@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+def send_notification(message)
+  `terminal-notifier -group "passta-notification" -title "Pass" -message "#{message}";`
+end
+
+def remove_notification
+  `terminal-notifier -remove "passta-notification" > /dev/null`
+end
+
+def should_send_notification?
+  return false if ARGV.empty?
+
+  pass_commands = %w[init find grep insert edit generate rm mv cp git help version]
+
+  ! pass_commands.include?(ARGV.first)
+end
+
+send_notification('Awaiting Yubikey confirmation') if should_send_notification?
+status = system("/usr/local/bin/pass #{ARGV.join(" ")}")
+remove_notification if should_send_notification?
+
+exit status
